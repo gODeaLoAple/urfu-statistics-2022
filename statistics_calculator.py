@@ -32,7 +32,7 @@ class StatisticsCalculator:
         sample_variance = sum(x ** 2 * k for x, k in self.data.items()) / n - (sample_mean ** 2)
 
         sigma = math.sqrt(sample_variance)
-        s_2 = (n / (n - 1)) * sample_variance
+        s_2 = (n / (n - 1)) * sample_variance if n > 1 else 0
         sigma_2 = math.sqrt(s_2)
 
         mode = Counter(self.variances).most_common(1)[0][0]

@@ -1,5 +1,3 @@
-from matplotlib import pyplot as plt
-
 from report_builder import ReportBuilder
 from table_builder import TableBuilder
 from intervals import Intervals
