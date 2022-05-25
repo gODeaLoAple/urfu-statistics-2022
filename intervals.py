@@ -5,6 +5,7 @@ class Intervals:
         self.step = step
         self.intervals = list(map(lambda i: (i, i + self.step - 1), range(self.start, self.end + 1, self.step)))
 
+
     def get_index(self, point: int) -> int:
         for i in range(0, len(self.intervals)):
             if self.intervals[i][0] <= point <= self.intervals[i][1]:

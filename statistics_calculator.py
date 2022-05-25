@@ -39,4 +39,11 @@ class StatisticsCalculator:
 
         median = calculate_median(self.variances)
 
-        return StatisticsData(sample_mean, sample_variance, sigma, s_2, mode, median, sigma_2)
+        return StatisticsData(
+            sample_mean,
+            sample_variance,
+            sigma,
+            s_2,
+            mode,
+            median,
+            sigma_2)

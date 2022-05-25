@@ -2,12 +2,11 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 
-def draw_table(columns, data):
+def draw_table(columns, data, filename=None):
     fig, ax = plt.subplots()
 
     fig.patch.set_visible(False)
     ax.axis('off')
-    ax.axis('tight')
 
     df = pd.DataFrame(data, columns=columns)
 
@@ -15,4 +14,6 @@ def draw_table(columns, data):
 
     fig.tight_layout()
 
+    if filename:
+        plt.savefig(filename)
     plt.show()
