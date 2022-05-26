@@ -3,6 +3,7 @@ from matplotlib import pyplot as plt
 from scipy.stats import laplace
 
 from statistics_calculator import StatisticsCalculator
+from statistics_data import StatisticsData
 from table_helper import draw_table
 from variance_collection import VarianceCollection
 
@@ -19,12 +20,12 @@ def calculate_laplace(a, sigma, left, right):
 
 
 class ReportBuilder:
-    def __init__(self, intervals: VarianceCollection, name,
+    def __init__(self, intervals: VarianceCollection, name, stat: StatisticsData,
                  options: NormReportOptions):
         self.name = name
         self.collection = intervals
         self.options = options
-        self.stat = StatisticsCalculator(self.collection).calculate()
+        self.stat = stat
 
     def print_table(self):
         values = {x.middle: x.count for x in self.collection.intervals}
