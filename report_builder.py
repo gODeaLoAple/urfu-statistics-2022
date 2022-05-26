@@ -121,5 +121,5 @@ class ReportBuilder:
         if self.options.xi_expected is not None:
             xi_expected = self.options.xi_expected
         else:
-            xi_expected = float(input(f"Значение в таблице Xi = Xi({self.options.alpha}, {k}): ")) ** 2
+            xi_expected = float(input(f"Значение в таблице Пирсона Xi = Xi({self.options.alpha}, {k}): "))
         return xi_empirical < xi_expected
