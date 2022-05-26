@@ -1,12 +1,11 @@
-from one_dimensional_table import OneDimensionalTable
+from intervals_range import IntervalsRange
 from report_builder import ReportBuilder, NormReportOptions
 from table_builder import TableBuilder
-from intervals import Intervals
+from variance_collection import VarianceCollection
 
 
-def report(variances, intervals, name, options):
-    frequencies = OneDimensionalTable(intervals).create_discrete_table(variances)
-    builder = ReportBuilder(variances, frequencies, intervals, name, options)
+def report(intervals, name, options):
+    builder = ReportBuilder(intervals, name, options)
     builder.print_table()
     builder.create_hist()
     builder.print_stat()
@@ -105,14 +104,14 @@ def main():
         (67, 500),
     ]
     x_variances, y_variances = list(map(list, map(sorted, zip(*pairs))))
-    x_intervals, y_intervals = Intervals(38, max(x_variances), 7), Intervals(333, max(y_variances), 50)
+    x_intervals = VarianceCollection(x_variances, IntervalsRange(38, max(x_variances), 7))
+    y_intervals = VarianceCollection(y_variances, IntervalsRange(333, max(y_variances), 50))
 
     table = TableBuilder(x_intervals, y_intervals).build(pairs)
     table.draw()
 
-    report(x_variances, x_intervals, "X", NormReportOptions(0.05, 6, 1.67))
-
-    report(y_variances, y_intervals, "Y", NormReportOptions(0.05, 7.8, 1.67))
+    report(x_intervals, "X", NormReportOptions(0.05, 6, 1.67))
+    report(y_intervals, "Y", NormReportOptions(0.05, 7.8, 1.67))
 
 
 main()

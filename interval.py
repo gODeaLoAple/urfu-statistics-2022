@@ -5,3 +5,6 @@ class Interval:
         self.middle = (right + left) / 2
         self.values = values
         self.count = len(values)
+
+    def __contains__(self, item):
+        return self.left <= item <= self.right

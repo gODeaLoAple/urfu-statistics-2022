@@ -1,13 +1,10 @@
-from typing import List, Dict
-
 import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.stats import laplace
 
-from intervals import Intervals
 from statistics_calculator import StatisticsCalculator
-from statistics_data import StatisticsData
 from table_helper import draw_table
+from variance_collection import VarianceCollection
 
 
 class NormReportOptions:
@@ -22,23 +19,23 @@ def calculate_laplace(a, sigma, left, right):
 
 
 class ReportBuilder:
-    def __init__(self, variances: List[int], frequencies: Dict[float, int], intervals: Intervals, name,
+    def __init__(self, intervals: VarianceCollection, name,
                  options: NormReportOptions):
-        self.frequencies = frequencies
-        self.variances = variances
         self.name = name
-        self.intervals = intervals
+        self.collection = intervals
         self.options = options
-        self.stat = StatisticsCalculator(self.frequencies, self.variances).calculate()
+        self.stat = StatisticsCalculator(self.collection).calculate()
 
     def print_table(self):
-        columns = [self.name] + list(map(str, self.frequencies.keys()))
-        data = [["N"] + list(map(str, self.frequencies.values()))]
-        draw_table(columns, data, filename=f"distribution {self.name}.png")
+        values = {x.middle: x.count for x in self.collection.intervals}
+        columns = [self.name] + list(map(str, values.keys()))
+        data = [["N"] + list(map(str, values.values()))]
+        draw_table(columns, data, filename=f"Distribution {self.name}.png")
 
     def create_hist(self):
-        values = list(self.frequencies.values())
-        indexes = list(map(lambda x: str(x).replace(".0", ""), self.frequencies.keys()))
+        frequencies = {x.middle: x.count for x in self.collection.intervals}
+        values = list(frequencies.values())
+        indexes = list(map(lambda x: str(x).replace(".0", ""), frequencies.keys()))
 
         df = pd.DataFrame(dict(data=values), index=indexes)
         fig, ax = plt.subplots()
@@ -48,21 +45,21 @@ class ReportBuilder:
         plt.xlabel(self.name)
         plt.ylabel("n")
 
-        val = self.frequencies.values()
         step = 10
-        ticks = list(range(step, max(val) + step, step)) + list(self.frequencies.values())
+        ticks = list(range(step, max(values) + step, step)) + values
         major_tick = list(sorted(ticks))
         ax.set_yticks(major_tick)
 
-        plt.savefig(f"Hist_{self.name}.png")
+        plt.savefig(f"Hist {self.name}.png")
         plt.show()
 
     def create_norm_hist(self, a, sigma):
-        values = list(self.frequencies.values())
-        indexes = list(self.frequencies.keys())
+        frequencies = {x.middle: x.count for x in self.collection.intervals}
+        values = list(frequencies.values())
+        indexes = list(frequencies.keys())
 
-        n = sum(self.frequencies.values())
-        good_values = [calculate_laplace(a, sigma, left, right) * n for left, right in self.intervals.intervals]
+        n = self.collection.count()
+        good_values = [calculate_laplace(a, sigma, x.left, x.right) * n for x in self.collection.intervals]
 
         plt.figure(figsize=(10, 10))
         plt.plot(indexes, values, label=r'Эмпирические данные')
@@ -92,7 +89,7 @@ class ReportBuilder:
     def report_norm(self):
         t_gamma = 1 - self.options.alpha
         stat = self.stat
-        n = len(self.variances)
+        n = self.collection.count()
         k = t_gamma * stat.sigma_2 / (n ** 0.5)
         a = stat.sample_mean
         sigma = stat.sigma_2
@@ -114,14 +111,14 @@ class ReportBuilder:
             self.create_norm_hist(a, sigma)
 
     def pirson(self, a, sigma):
-        n = sum(self.frequencies.values())
+        n = self.collection.count()
         s = 0
-        for left, right in self.intervals.intervals:
-            p1_i = self.frequencies[(left + right) / 2]
-            p2_i = calculate_laplace(a, sigma, left, right) * n
+        for interval in self.collection.intervals:
+            p1_i = interval.count
+            p2_i = calculate_laplace(a, sigma, interval.left, interval.right) * n
             s += (p2_i - p1_i) ** 2 / p2_i
         xi_empirical = s
-        k = len([v for v in self.frequencies.values() if v >= 4]) - 3
+        k = len([v for v in self.collection.intervals if v.count >= 4]) - 3
         if self.options.xi_expected is not None:
             xi_expected = self.options.xi_expected
         else:
