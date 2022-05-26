@@ -32,10 +32,10 @@ def main():
     alpha = data["alpha"]
 
     x_stat = StatisticsCalculator(x_intervals).calculate()
-    #report(x_intervals, x_stat, "X", NormReportOptions(alpha, data.get("xi_expected_x", None), data.get("q_x", None)))
+    report(x_intervals, x_stat, "X", NormReportOptions(alpha, data.get("xi_expected_x", None), data.get("q_x", None)))
 
     y_stat = StatisticsCalculator(y_intervals).calculate()
-    #report(y_intervals, y_stat, "Y", NormReportOptions(alpha, data.get("xi_expected_y", None), data.get("q_y", None)))
+    report(y_intervals, y_stat, "Y", NormReportOptions(alpha, data.get("xi_expected_y", None), data.get("q_y", None)))
 
     correlation = Correlation(table, x_stat, y_stat, CorrelationOptions(alpha, data.get("critical_t", None)))
     rxy = correlation.coefficient()

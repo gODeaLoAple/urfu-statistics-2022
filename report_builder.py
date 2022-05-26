@@ -20,7 +20,7 @@ def calculate_laplace(a, sigma, left, right):
 
 
 class ReportBuilder:
-    def __init__(self, intervals: VarianceCollection, name, stat: StatisticsData,
+    def __init__(self, intervals: VarianceCollection, stat: StatisticsData, name,
                  options: NormReportOptions):
         self.name = name
         self.collection = intervals
