@@ -1,7 +1,7 @@
 import json
-import math
 
 from correlation import Correlation
+from correlation_options import CorrelationOptions
 from intervals_range import IntervalsRange
 from report_builder import ReportBuilder, NormReportOptions
 from table_builder import TableBuilder
@@ -33,9 +33,9 @@ def main():
     x_stat = report(x_intervals, "X", NormReportOptions(alpha, data.get("xi_expected_x", None), data.get("q_x", None)))
     y_stat = report(y_intervals, "Y", NormReportOptions(alpha, data.get("xi_expected_y", None), data.get("q_y", None)))
 
-    correlation = Correlation(table, x_stat, y_stat)
+    correlation = Correlation(table, x_stat, y_stat, CorrelationOptions(alpha, data.get("critical_t", None)))
     rxy = correlation.coefficient()
-    T = rxy * math.sqrt((n - 2) / (1 - rxy ** 2))
+    print(correlation.significance())
 
 
 main()

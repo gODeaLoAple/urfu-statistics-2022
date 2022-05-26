@@ -97,5 +97,6 @@
   "xi_expected_x": 6,
   "q_x": 1.67,
   "xi_expected_y": 7.8,
-  "q_y": 1.67
+  "q_y": 1.67,
+  "critical_t": 1.99
 }
