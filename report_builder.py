@@ -30,7 +30,7 @@ class ReportBuilder:
         values = {x.middle: x.count for x in self.collection.intervals}
         columns = [self.name] + list(map(str, values.keys()))
         data = [["N"] + list(map(str, values.values()))]
-        draw_table(columns, data, filename=f"Distribution {self.name}.png")
+        draw_table(columns, data, filename=f"results/Distribution {self.name}.png")
 
     def create_hist(self):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
@@ -50,7 +50,7 @@ class ReportBuilder:
         major_tick = list(sorted(ticks))
         ax.set_yticks(major_tick)
 
-        plt.savefig(f"Hist {self.name}.png")
+        plt.savefig(f"results/Hist {self.name}.png")
         plt.show()
 
     def create_norm_hist(self, a, sigma):
@@ -69,7 +69,7 @@ class ReportBuilder:
         plt.grid(True)
         plt.legend(loc='best', fontsize=7)
 
-        plt.savefig(f"Hist_Norm_{self.name}.png")
+        plt.savefig(f"results/Hist_Norm_{self.name}.png")
         plt.show()
 
     def print_stat(self):
@@ -84,7 +84,7 @@ class ReportBuilder:
             ["Медиана", stat.median],
         ]
 
-        draw_table(columns, data, filename=f"Characteristics {self.name}.png")
+        draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
 
     def report_norm(self):
         t_gamma = 1 - self.options.alpha
@@ -106,7 +106,7 @@ class ReportBuilder:
             [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q)}; {stat.sigma_2 * (1 + q)})"],
             [r"Критерий Пирсона", p]
         ]
-        draw_table(columns, data, filename=f"Characteristics Normal {self.name}.png")
+        draw_table(columns, data, filename=f"results/Characteristics Normal {self.name}.png")
         self.create_norm_hist(a, sigma)
 
     def pirson(self, a, sigma):
