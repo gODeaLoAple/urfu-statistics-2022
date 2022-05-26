@@ -12,6 +12,9 @@ class Table:
         self.y_intervals = y
         self.table = frequency_table
 
+    def get_frequency_at(self, x_index, y_index):
+        return self.table.get((x_index, y_index), 0)
+
     def draw(self):
         columns = [str(list(x)) for x in self.x_intervals.segments()]
         rows = [str(list(y)) for y in self.y_intervals.segments()]

@@ -13,6 +13,9 @@ class VarianceCollection:
         self.values = values
         self.intervals = [_create_interval(values, left, right) for left, right in settings.range()]
 
+    def get_interval(self, index):
+        return self.intervals[index]
+
     def get_index(self, value):
         for i, interval in enumerate(self.intervals):
             if value in interval:

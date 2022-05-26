@@ -107,8 +107,7 @@ class ReportBuilder:
             [r"Критерий Пирсона", p]
         ]
         draw_table(columns, data, filename=f"Characteristics Normal {self.name}.png")
-        if not p:
-            self.create_norm_hist(a, sigma)
+        self.create_norm_hist(a, sigma)
 
     def pirson(self, a, sigma):
         n = self.collection.count()
@@ -123,6 +122,4 @@ class ReportBuilder:
             xi_expected = self.options.xi_expected
         else:
             xi_expected = float(input(f"Значение в таблице Xi = Xi({self.options.alpha}, {k}): ")) ** 2
-        print(xi_empirical)
-        print(xi_expected)
         return xi_empirical < xi_expected

@@ -1,3 +1,6 @@
+import math
+
+from correlation import Correlation
 from intervals_range import IntervalsRange
 from report_builder import ReportBuilder, NormReportOptions
 from table_builder import TableBuilder
@@ -10,6 +13,7 @@ def report(intervals, name, options):
     builder.create_hist()
     builder.print_stat()
     builder.report_norm()
+    return builder.stat
 
 
 def main():
@@ -103,6 +107,7 @@ def main():
         (66, 557),
         (67, 500),
     ]
+    n = len(pairs)
     x_variances, y_variances = list(map(list, map(sorted, zip(*pairs))))
     x_intervals = VarianceCollection(x_variances, IntervalsRange(38, max(x_variances), 7))
     y_intervals = VarianceCollection(y_variances, IntervalsRange(333, max(y_variances), 50))
@@ -110,8 +115,13 @@ def main():
     table = TableBuilder(x_intervals, y_intervals).build(pairs)
     table.draw()
 
-    report(x_intervals, "X", NormReportOptions(0.05, 6, 1.67))
-    report(y_intervals, "Y", NormReportOptions(0.05, 7.8, 1.67))
+    x_stat = report(x_intervals, "X", NormReportOptions(0.05, 6, 1.67))
+    y_stat = report(y_intervals, "Y", NormReportOptions(0.05, 7.8, 1.67))
+
+    correlation = Correlation(table, x_stat, y_stat)
+    rxy = correlation.coefficient()
+    T = rxy * math.sqrt((n - 2) / (1 - rxy ** 2))
+
 
 
 main()
