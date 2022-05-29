@@ -37,5 +37,5 @@ class Table:
 
         fig.tight_layout()
 
-        plt.show()
         plt.savefig("results/table.png")
+        plt.show()
