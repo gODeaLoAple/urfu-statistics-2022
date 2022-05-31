@@ -15,6 +15,7 @@ def report(collection, stat, name, options):
     builder.report_hist()
     builder.report_stat()
     builder.report_norm()
+    builder.report_functions()
 
 
 def main():

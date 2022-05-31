@@ -2,8 +2,10 @@ import itertools
 import math
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from scipy import stats
 from scipy.stats import laplace
 
 from interval import Interval
@@ -38,20 +40,6 @@ class ReportBuilder:
         draw_table(columns, data, filename=f"results/Distribution {self.name}.png")
 
     def report_hist(self):
-        intervals = self.collection.intervals
-        frequencies = {x.middle: x.count for x in intervals}
-        values = list(frequencies.values())
-        indexes = list(frequencies.keys())
-
-        r = []
-        for middle, count in frequencies.items():
-            r.extend([middle] * count)
-        bins = [x.left for x in intervals] + [intervals[-1].right]
-        plt.hist(r, bins=bins)
-        plt.savefig(f"results/Hist {self.name} 2.png")
-        plt.show()
-
-    def report_hist2(self):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
         values = list(frequencies.values())
         indexes = list(map(lambda x: str(x).replace(".0", ""), frequencies.keys()))
@@ -59,7 +47,7 @@ class ReportBuilder:
         df = pd.DataFrame(dict(data=values), index=indexes)
         fig, ax = plt.subplots()
         df["data"].plot(kind='bar', edgecolor='black', grid=True, width=1.0)
-        df["data"].plot(kind='line', marker='*', color='black', ms=10, grid=True)
+        df["data"].plot(kind='line', color='black', ms=10)
         plt.title(f"Гистограмма и полигоны варианты {self.name}")
         plt.xlabel(self.name)
         plt.ylabel("n")
@@ -96,18 +84,17 @@ class ReportBuilder:
             [r"Интервальная оценка $a$", f"({a - k:0.5f}; {a + k:0.5f})"],
             [r"Точечная оценка $\sigma$", f"{sigma:0.5f}"],
             [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q):0.5f}; {stat.sigma_2 * (1 + q):0.5f})"],
+            [r"Критерий Пирсона", p],
             [r"Теоретическая плотность вероятности", self.density_function_str(a, sigma)],
-            [r"Теоретическая функция распределения", f""],
-            [r"Критерий Пирсона", p]
         ]
         draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
 
     def report_norm(self):
         a = self.stat.sample_mean
         sigma = self.stat.sigma_2
-        self.create_norm_hist(a, sigma)
+        self.create_norm_graph(a, sigma)
 
-    def create_norm_hist(self, a, sigma):
+    def create_norm_graph(self, a, sigma):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
         values = list(frequencies.values())
         indexes = list(frequencies.keys())
@@ -123,8 +110,12 @@ class ReportBuilder:
         plt.grid(True)
         plt.legend(loc='best', fontsize=7)
 
-        plt.savefig(f"results/Hist_Norm_{self.name}.png")
+        plt.savefig(f"results/Graph_Norm_{self.name}.png")
         plt.show()
+
+    def report_functions(self):
+        self.report_distribution_density_func()
+        self.report_distribution_func()
 
     def pirson(self, a, sigma):
         n = self.collection.count()
@@ -158,3 +149,27 @@ class ReportBuilder:
     @staticmethod
     def density_function_str(a, sigma):
         return r"$\frac{1}{" + f"{(math.sqrt(2 * math.pi) * sigma):0.2f}" + r"}e^{-\frac{" + f"(x - {a:0.2f})^2" + "}{" + f"{math.sqrt(2) * sigma:0.2f}" + "}}$"
+
+    def report_distribution_density_func(self):
+        values = list(itertools.chain(*([x.middle] * x.count for x in self.collection.intervals)))
+        intervals = self.collection.intervals
+        bins = [x.left for x in intervals] + [intervals[-1].right]
+        plt.hist(values, bins=bins, density=True, alpha=0.6)
+        a, sigma = self.stat.sample_mean, self.stat.sigma_2
+        x = np.linspace(a - 3 * sigma, a + 3 * sigma, 100)
+        plt.plot(x, stats.norm.pdf(x, a, sigma), label="Теоретическая плотность")
+        plt.grid(True)
+        plt.title(f"График теоретической плотности {self.name}")
+        plt.savefig(f"results/distribution_density_{self.name}.png")
+        plt.show()
+
+    def report_distribution_func(self):
+        a, sigma = self.stat.sample_mean, self.stat.sigma_2
+        x = np.linspace(a - 3 * sigma, a + 3 * sigma, 100)
+        plt.plot(x, stats.norm.cdf(x, a, sigma))
+        plt.grid(True)
+        plt.title(f"График теоретической функци распределения {self.name}")
+        plt.savefig(f"results/distribution_function_{self.name}.png")
+        plt.show()
+
+
