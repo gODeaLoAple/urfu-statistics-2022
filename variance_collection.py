@@ -5,7 +5,7 @@ from intervals_range import IntervalsRange
 
 
 def _create_interval(values, left, right):
-    return Interval(left, right, [v for v in values if left <= v <= right])
+    return Interval(left, right, [v for v in values if left <= v < right])
 
 
 class VarianceCollection:

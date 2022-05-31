@@ -16,8 +16,8 @@ class Table:
         return self.table.get((x_index, y_index), 0)
 
     def draw(self):
-        columns = [str(list(x)) for x in self.x_intervals.segments()]
-        rows = [str(list(y)) for y in self.y_intervals.segments()]
+        columns = [f"[{x[0]}, {x[1]})" for x in self.x_intervals.segments()]
+        rows = [f"[{y[0]}, {y[1]})" for y in self.y_intervals.segments()]
 
         data = []
         for y in range(len(rows)):
