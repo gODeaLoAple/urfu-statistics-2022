@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 from correlation_options import CorrelationOptions
 from statistics_data import StatisticsData
 from table import Table
+from table_helper import draw_table
 from variance_collection import VarianceCollection
 
 
@@ -22,6 +23,9 @@ class Correlation:
         self.options = options
 
     def coefficient(self):
+        return self.covaration() / (self.x_stat.sigma_2 * self.y_stat.sigma_2)
+
+    def covaration(self):
         frequencies = self.table.table
         x_intervals = self.table.x_intervals
         x_middles = x_intervals.middles()
@@ -31,30 +35,34 @@ class Correlation:
 
         s = sum(v * x_middles[x] * y_middles[y] for (x, y), v in frequencies.items())
         kxy = (s - n * self.x_stat.sample_mean * self.y_stat.sample_mean) / (n - 1)
-        return kxy / (self.x_stat.sigma_2 * self.y_stat.sigma_2)
+        return kxy
 
-    def significance(self):
+    def student_coefficient(self):
         n = self.count
         rxy = self.coefficient()
         t = rxy * math.sqrt((n - 2) / (1 - rxy ** 2))
+        return t
+
+    def significance(self):
+        n = self.count
         if self.options.critical_t is None:
             critical_t = float(input(f"Значение в таблице Стьюдента t=t({self.options.alpha}, {n - 2}): "))
         else:
             critical_t = self.options.critical_t
-        return abs(t) < critical_t
+        return abs(self.student_coefficient()) < critical_t
 
-    def regression_lines(self):
+    def report(self):
         r = self.coefficient()
         y0 = self.y_stat.sample_mean
         x0 = self.x_stat.sample_mean
+        ky = r * self.y_stat.sigma_2 / self.x_stat.sigma_2
+        kx = r * self.x_stat.sigma_2 / self.y_stat.sigma_2
 
         def y_regression(x):
-            k = r * self.y_stat.sigma_2 / self.x_stat.sigma_2
-            return y0 + k * (x - x0)
+            return y0 + ky * (x - x0)
 
         def x_regression(y):
-            k = r * self.x_stat.sigma_2 / self.y_stat.sigma_2
-            return x0 + k * (y - y0)
+            return x0 + kx * (y - y0)
 
         # Y = Y(X)
         xs, ys = list(map(list, zip(*self.get_x_to_y())))
@@ -63,6 +71,16 @@ class Correlation:
         # X = X(Y)
         xs, ys = list(map(list, zip(*self.get_y_to_x())))
         self.draw_regression(xs, ys, x_regression, f"results/Regression X on Y.png")
+
+        columns = ["Величина", "Значение"]
+        data = [
+            ["Ковариация", f"{self.covaration():0.4f}"],
+            ["Коэффициент корреляции", f"{self.coefficient():0.4f}"],
+            ["Наблюдаемое значение критерия Стюдента", f"{self.student_coefficient():0.4f}"],
+            ["Уравнение теоретической регрессии Y на X", f"$y = ({ky:0.2f}) * x + ({(y0 - ky * x0):0.2f})$"],
+            ["Уравнение теоретической регрессии X на Y", f"$x = ({kx:0.2f}) * y + ({(x0 - kx * y0):0.2f})$"],
+        ]
+        draw_table(columns, data, filename="results/Correlation.png")
 
     @staticmethod
     def draw_regression(xs, ys, f, name):

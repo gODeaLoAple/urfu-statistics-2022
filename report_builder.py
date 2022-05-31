@@ -113,16 +113,17 @@ class ReportBuilder:
         s = 0
         for i, interval in enumerate(self.collection.intervals):
             p1_i = interval.count
-            left = float("-inf") if i == 0 else interval.left
-            right = float("+inf") if i == len(self.collection.intervals) - 1 else interval.right
-            p2_i = calculate_laplace(a, sigma, left, right) * n
-            s += (p2_i - p1_i) ** 2 / p2_i
+            # left = float("-inf") if i == 0 else interval.left
+            # right = float("+inf") if i == len(self.collection.intervals) - 1 else interval.right
+            p2_i = calculate_laplace(a, sigma, interval.left, interval.right) * n
+            s += (p1_i - p2_i) ** 2 / p2_i
         xi_empirical = s
         k = self._count_good_intervals() - 3
         if self.options.xi_expected is not None:
             xi_expected = self.options.xi_expected
         else:
             xi_expected = float(input(f"Значение в таблице Пирсона Xi = Xi({self.options.alpha}, {k}): "))
+        print(f"Xi empirical for {self.name}: {xi_empirical:0.3f}")
         return xi_empirical < xi_expected
 
     def _count_good_intervals(self):
