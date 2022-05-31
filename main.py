@@ -18,7 +18,7 @@ def report(collection, stat, name, options):
 
 
 def main():
-    with open("data3.json", "r", encoding="utf8") as f:
+    with open("data.json", "r", encoding="utf8") as f:
         data = json.load(f)
     pairs = data["pairs"]
     n = len(pairs)
@@ -38,11 +38,7 @@ def main():
     report(y_intervals, y_stat, "Y", NormReportOptions(alpha, data.get("xi_expected_y", None), data.get("q_y", None)))
 
     correlation = Correlation(table, x_stat, y_stat, CorrelationOptions(alpha, data.get("critical_t", None)))
-    rxy = correlation.coefficient()
     correlation.report()
-    print(correlation.significance())
 
 
 main()
-
-

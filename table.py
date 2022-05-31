@@ -26,15 +26,15 @@ class Table:
             for x in range(len(columns)):
                 data[y].append(self.table.get((x, y), ""))
 
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(10, 10))
 
         fig.patch.set_visible(False)
         ax.axis('off')
 
         df = pd.DataFrame(data, columns=["Y\\X"] + columns)
 
-        ax.table(cellText=df.values, colLabels=df.columns, loc='center', cellLoc="center")
-
+        table = ax.table(cellText=df.values, colLabels=df.columns, loc='center', cellLoc="center")
+        table.scale(1, 2)
         fig.tight_layout()
 
         plt.savefig("results/table.png")

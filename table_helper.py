@@ -3,16 +3,17 @@ from matplotlib import pyplot as plt
 
 
 def draw_table(columns, data, filename=None):
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10, 20))
 
     fig.patch.set_visible(False)
     ax.axis('off')
 
     df = pd.DataFrame(data, columns=columns)
 
-    ax.table(cellText=df.values, colLabels=df.columns, loc='center', cellLoc="center")
+    table = ax.table(cellText=df.values, colLabels=df.columns, loc='center', cellLoc="center")
 
-    fig.tight_layout()
+    plt.tight_layout()
+    table.scale(1, 2)
 
     if filename:
         plt.savefig(filename)

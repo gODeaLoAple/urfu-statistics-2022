@@ -1,3 +1,5 @@
+import itertools
+import math
 from typing import Optional
 
 import pandas as pd
@@ -36,6 +38,20 @@ class ReportBuilder:
         draw_table(columns, data, filename=f"results/Distribution {self.name}.png")
 
     def report_hist(self):
+        intervals = self.collection.intervals
+        frequencies = {x.middle: x.count for x in intervals}
+        values = list(frequencies.values())
+        indexes = list(frequencies.keys())
+
+        r = []
+        for middle, count in frequencies.items():
+            r.extend([middle] * count)
+        bins = [x.left for x in intervals] + [intervals[-1].right]
+        plt.hist(r, bins=bins)
+        plt.savefig(f"results/Hist {self.name} 2.png")
+        plt.show()
+
+    def report_hist2(self):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
         values = list(frequencies.values())
         indexes = list(map(lambda x: str(x).replace(".0", ""), frequencies.keys()))
@@ -80,6 +96,8 @@ class ReportBuilder:
             [r"Интервальная оценка $a$", f"({a - k:0.5f}; {a + k:0.5f})"],
             [r"Точечная оценка $\sigma$", f"{sigma:0.5f}"],
             [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q):0.5f}; {stat.sigma_2 * (1 + q):0.5f})"],
+            [r"Теоретическая плотность вероятности", self.density_function_str(a, sigma)],
+            [r"Теоретическая функция распределения", f""],
             [r"Критерий Пирсона", p]
         ]
         draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
@@ -136,3 +154,7 @@ class ReportBuilder:
             merged = [Interval(intervals[-2].left, intervals[-1].right, intervals[-2].values + intervals[-1].values)]
             intervals = intervals[:-2] + merged
         return sum(1 for v in intervals if v.count >= min_count)
+
+    @staticmethod
+    def density_function_str(a, sigma):
+        return r"$\frac{1}{" + f"{(math.sqrt(2 * math.pi) * sigma):0.2f}" + r"}e^{-\frac{" + f"(x - {a:0.2f})^2" + "}{" + f"{math.sqrt(2) * sigma:0.2f}" + "}}$"
