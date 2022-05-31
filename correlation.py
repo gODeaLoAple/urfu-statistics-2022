@@ -1,4 +1,5 @@
 import math
+import typing
 from collections import Counter
 
 from matplotlib import pyplot as plt
@@ -11,18 +12,6 @@ from variance_collection import VarianceCollection
 
 def get_middle(interval: VarianceCollection, index: int):
     return interval.get_interval(index).middle
-
-
-def get_conditional_coords(pairs):
-    result = {}
-    for x, y in pairs:
-        if x not in result:
-            result[x] = []
-        result[x].append(y)
-    result = [(xm, Counter(yms)) for xm, yms in result.items()]
-    result = [(xm, sum(y * n for y, n in c.items()) / sum(c.values())) for xm, c in result]
-    return list(sorted(result, key=lambda t: t[0]))
-
 
 class Correlation:
     def __init__(self, table: Table, x_stat: StatisticsData, y_stat: StatisticsData, options: CorrelationOptions):
@@ -69,36 +58,44 @@ class Correlation:
 
         # Y = Y(X)
         xs, ys = list(map(list, zip(*self.get_x_to_y())))
-
-        plt.figure(figsize=(10, 10))
-        plt.plot(xs, ys, label=r'Эмпирические данные')
-        plt.plot(xs, list(map(y_regression, xs)), label=r'Теоретические данные')
-        plt.grid(True)
-        plt.legend(loc='best', fontsize=7)
-
-        plt.savefig(f"results/Regression Y on X.png")
-        plt.show()
+        self.draw_regression(xs, ys, y_regression, f"results/Regression Y on X.png")
 
         # X = X(Y)
         xs, ys = list(map(list, zip(*self.get_y_to_x())))
+        self.draw_regression(xs, ys, x_regression, f"results/Regression X on Y.png")
 
+    @staticmethod
+    def draw_regression(xs, ys, f, name):
         plt.figure(figsize=(10, 10))
         plt.plot(xs, ys, label=r'Эмпирические данные')
-        plt.plot(xs, list(map(x_regression, xs)), label=r'Теоретические данные')
+        plt.plot(xs, list(map(f, xs)), label=r'Теоретические данные')
         plt.grid(True)
         plt.legend(loc='best', fontsize=7)
 
-        plt.savefig(f"results/Regression X on Y.png")
+        plt.savefig(name)
         plt.show()
 
     def get_x_to_y(self):
-        return get_conditional_coords([(x, y) for x, y in self.get_middles()])
+        return self.get_conditional_coords([(x, y) for x, y in self.get_middles()])
 
     def get_y_to_x(self):
-        return get_conditional_coords([(y, x) for x, y in self.get_middles()])
+        return self.get_conditional_coords([(y, x) for x, y in self.get_middles()])
+
+    @staticmethod
+    def get_conditional_coords(pairs):
+        result = {}
+        for x, y in pairs:
+            if x not in result:
+                result[x] = []
+            result[x].append(y)
+        result = [(xm, Counter(yms)) for xm, yms in result.items()]
+        result = [(xm, sum(y * n for y, n in c.items()) / sum(c.values())) for xm, c in result]
+        return list(sorted(result, key=lambda t: t[0]))
 
     def get_middles(self):
+        x_intervals = self.table.x_intervals
+        y_intervals = self.table.y_intervals
         for x, y in self.table.table.keys():
-            xm = get_middle(self.table.x_intervals, x)
-            ym = get_middle(self.table.y_intervals, y)
+            xm = get_middle(x_intervals, x)
+            ym = get_middle(y_intervals, y)
             yield xm, ym

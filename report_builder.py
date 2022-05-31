@@ -69,16 +69,16 @@ class ReportBuilder:
         p = self.pirson(a, sigma)
         columns = [f"Числовые характеристики", self.name]
         data = [
-            ["Выборочное среднее", stat.sample_mean],
-            ["Выборочная дисперсия", stat.sample_variance],
-            ["Выборочное СКО", stat.sigma],
-            ["Испавленное СКО", stat.sigma_2],
-            ["Мода", stat.mode],
-            ["Медиана", stat.median],
-            [r"Точечная оценка $a$", a],
-            [r"Интервальная оценка $a$", f"({a - k}; {a + k})"],
-            [r"Точечная оценка $\sigma$", sigma],
-            [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q):0.4f}; {stat.sigma_2 * (1 + q):0.4f})"],
+            ["Выборочное среднее", f"{stat.sample_mean:0.5f}"],
+            ["Выборочная дисперсия", f"{stat.sample_variance:0.5f}"],
+            ["Выборочное СКО", f"{stat.sigma:0.5f}"],
+            ["Испавленное СКО", f"{stat.sigma_2:0.5f}"],
+            ["Мода", f"{stat.mode:0.5f}"],
+            ["Медиана", f"{stat.median:0.5f}"],
+            [r"Точечная оценка $a$", f"{a:0.5f}"],
+            [r"Интервальная оценка $a$", f"({a - k:0.5f}; {a + k:0.5f})"],
+            [r"Точечная оценка $\sigma$", f"{sigma:0.5f}"],
+            [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q):0.5f}; {stat.sigma_2 * (1 + q):0.5f})"],
             [r"Критерий Пирсона", p]
         ]
         draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
