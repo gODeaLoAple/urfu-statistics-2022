@@ -35,10 +35,12 @@ class Correlation:
     def coefficient(self):
         frequencies = self.table.table
         x_intervals = self.table.x_intervals
+        x_middles = x_intervals.middles()
         y_intervals = self.table.y_intervals
+        y_middles = y_intervals.middles()
         n = self.count
 
-        s = sum(v * get_middle(x_intervals, x) * get_middle(y_intervals, y) for (x, y), v in frequencies.items())
+        s = sum(v * x_middles[x] * y_middles[y] for (x, y), v in frequencies.items())
         kxy = (s - n * self.x_stat.sample_mean * self.y_stat.sample_mean) / (n - 1)
         return kxy / (self.x_stat.sigma_2 * self.y_stat.sigma_2)
 
@@ -74,7 +76,7 @@ class Correlation:
         plt.grid(True)
         plt.legend(loc='best', fontsize=7)
 
-        plt.savefig(f"results/Regression X to Y.png")
+        plt.savefig(f"results/Regression Y on X.png")
         plt.show()
 
         # X = X(Y)
@@ -86,7 +88,7 @@ class Correlation:
         plt.grid(True)
         plt.legend(loc='best', fontsize=7)
 
-        plt.savefig(f"results/Regression Y to X.png")
+        plt.savefig(f"results/Regression X on Y.png")
         plt.show()
 
     def get_x_to_y(self):

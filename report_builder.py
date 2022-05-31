@@ -1,15 +1,16 @@
+from typing import Optional
+
 import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.stats import laplace
 
-from statistics_calculator import StatisticsCalculator
 from statistics_data import StatisticsData
 from table_helper import draw_table
 from variance_collection import VarianceCollection
 
 
 class NormReportOptions:
-    def __init__(self, alpha: float, xi_expected: float | None = None, q: float | None = None):
+    def __init__(self, alpha: float, xi_expected: Optional[float] = None, q: Optional[float] = None):
         self.xi_expected = xi_expected
         self.q = q
         self.alpha = alpha
@@ -27,13 +28,13 @@ class ReportBuilder:
         self.options = options
         self.stat = stat
 
-    def print_table(self):
+    def report_distribution(self):
         values = {x.middle: x.count for x in self.collection.intervals}
         columns = [self.name] + list(map(str, values.keys()))
         data = [["N"] + list(map(str, values.values()))]
         draw_table(columns, data, filename=f"results/Distribution {self.name}.png")
 
-    def create_hist(self):
+    def report_hist(self):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
         values = list(frequencies.values())
         indexes = list(map(lambda x: str(x).replace(".0", ""), frequencies.keys()))
@@ -54,6 +55,39 @@ class ReportBuilder:
         plt.savefig(f"results/Hist {self.name}.png")
         plt.show()
 
+    def report_stat(self):
+        t_gamma = 1 - self.options.alpha
+        stat = self.stat
+        n = self.collection.count()
+        k = t_gamma * stat.sigma_2 / (n ** 0.5)
+        a = stat.sample_mean
+        sigma = stat.sigma_2
+        if self.options.q is None:
+            q = float(input(f"Значение в таблице q=q({t_gamma}, {n}): "))
+        else:
+            q = self.options.q
+        p = self.pirson(a, sigma)
+        columns = [f"Числовые характеристики", self.name]
+        data = [
+            ["Выборочное среднее", stat.sample_mean],
+            ["Выборочная дисперсия", stat.sample_variance],
+            ["Выборочное СКО", stat.sigma],
+            ["Испавленное СКО", stat.sigma_2],
+            ["Мода", stat.mode],
+            ["Медиана", stat.median],
+            [r"Точечная оценка $a$", a],
+            [r"Интервальная оценка $a$", f"({a - k}; {a + k})"],
+            [r"Точечная оценка $\sigma$", sigma],
+            [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q):0.4f}; {stat.sigma_2 * (1 + q):0.4f})"],
+            [r"Критерий Пирсона", p]
+        ]
+        draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
+
+    def report_norm(self):
+        a = self.stat.sample_mean
+        sigma = self.stat.sigma_2
+        self.create_norm_hist(a, sigma)
+
     def create_norm_hist(self, a, sigma):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
         values = list(frequencies.values())
@@ -72,43 +106,6 @@ class ReportBuilder:
 
         plt.savefig(f"results/Hist_Norm_{self.name}.png")
         plt.show()
-
-    def print_stat(self):
-        stat = self.stat
-        columns = ["Числовые хар-ки", self.name]
-        data = [
-            ["Выборочное среднее", stat.sample_mean],
-            ["Выборочная дисперсия", stat.sample_variance],
-            ["Выборочное СКО", stat.sigma],
-            ["\"Испавленное\" СКО", stat.sigma_2],
-            ["Мода", stat.mode],
-            ["Медиана", stat.median],
-        ]
-
-        draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
-
-    def report_norm(self):
-        t_gamma = 1 - self.options.alpha
-        stat = self.stat
-        n = self.collection.count()
-        k = t_gamma * stat.sigma_2 / (n ** 0.5)
-        a = stat.sample_mean
-        sigma = stat.sigma_2
-        columns = ["Числовые хар-ки", self.name]
-        if self.options.q is None:
-            q = float(input(f"Значение в таблице q=q({t_gamma}, {n}): "))
-        else:
-            q = self.options.q
-        p = self.pirson(a, sigma)
-        data = [
-            [r"Точечная оценка $a$", a],
-            [r"Точечнкая оценка $\sigma$", sigma],
-            [r"Интервальная оценка $a$", f"({stat.sample_mean - k}; {stat.sample_mean + k})"],
-            [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q)}; {stat.sigma_2 * (1 + q)})"],
-            [r"Критерий Пирсона", p]
-        ]
-        draw_table(columns, data, filename=f"results/Characteristics Normal {self.name}.png")
-        self.create_norm_hist(a, sigma)
 
     def pirson(self, a, sigma):
         n = self.collection.count()

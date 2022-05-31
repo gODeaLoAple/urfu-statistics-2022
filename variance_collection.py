@@ -1,11 +1,12 @@
 from typing import List
 
-from interval import Interval
+from interval import Interval, BaseInterval
 from intervals_range import IntervalsRange
 
 
 def _create_interval(values, left, right):
-    return Interval(left, right, [v for v in values if left <= v < right])
+    interval = BaseInterval(left, right)
+    return Interval(left, right, [v for v in values if v in interval])
 
 
 class VarianceCollection:
@@ -23,10 +24,10 @@ class VarianceCollection:
         raise IndexError
 
     def middles(self):
-        return (x.middle for x in self.intervals)
+        return [x.middle for x in self.intervals]
 
     def count(self):
         return len(self.values)
 
     def segments(self):
-        return ((x.left, x.right) for x in self.intervals)
+        return list((x.left, x.right) for x in self.intervals)

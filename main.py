@@ -11,9 +11,9 @@ from variance_collection import VarianceCollection
 
 def report(collection, stat, name, options):
     builder = ReportBuilder(collection, stat, name, options)
-    builder.print_table()
-    builder.create_hist()
-    builder.print_stat()
+    builder.report_distribution()
+    builder.report_hist()
+    builder.report_stat()
     builder.report_norm()
 
 
