@@ -4,6 +4,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from scipy.stats import laplace
 
+from interval import Interval
 from statistics_data import StatisticsData
 from table_helper import draw_table
 from variance_collection import VarianceCollection
@@ -110,14 +111,27 @@ class ReportBuilder:
     def pirson(self, a, sigma):
         n = self.collection.count()
         s = 0
-        for interval in self.collection.intervals:
+        for i, interval in enumerate(self.collection.intervals):
             p1_i = interval.count
-            p2_i = calculate_laplace(a, sigma, interval.left, interval.right) * n
+            left = float("-inf") if i == 0 else interval.left
+            right = float("+inf") if i == len(self.collection.intervals) - 1 else interval.right
+            p2_i = calculate_laplace(a, sigma, left, right) * n
             s += (p2_i - p1_i) ** 2 / p2_i
         xi_empirical = s
-        k = len([v for v in self.collection.intervals if v.count >= 4]) - 3
+        k = self._count_good_intervals() - 3
         if self.options.xi_expected is not None:
             xi_expected = self.options.xi_expected
         else:
             xi_expected = float(input(f"Значение в таблице Пирсона Xi = Xi({self.options.alpha}, {k}): "))
         return xi_empirical < xi_expected
+
+    def _count_good_intervals(self):
+        min_count = 4
+        intervals = list(self.collection.intervals)
+        if intervals[0].count < min_count:
+            merged = [Interval(intervals[0].left, intervals[1].right, intervals[0].values + intervals[1].values)]
+            intervals = merged + intervals[2:]
+        if intervals[-1].count < min_count:
+            merged = [Interval(intervals[-2].left, intervals[-1].right, intervals[-2].values + intervals[-1].values)]
+            intervals = intervals[:-2] + merged
+        return sum(1 for v in intervals if v.count >= min_count)
