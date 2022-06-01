@@ -49,7 +49,7 @@ class Correlation:
             critical_t = float(input(f"Значение в таблице Стьюдента t=t({self.options.alpha}, {n - 2}): "))
         else:
             critical_t = self.options.critical_t
-        return abs(self.student_coefficient()) < critical_t
+        return abs(self.student_coefficient()) > critical_t
 
     def report(self):
         r = self.coefficient()

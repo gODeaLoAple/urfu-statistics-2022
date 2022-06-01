@@ -1,3 +1,4 @@
+import itertools
 import math
 from collections import Counter
 
@@ -6,10 +7,8 @@ from statistics_data import StatisticsData
 
 
 def calculate_median(numbers):
-    if len(numbers) == 1:
-        return numbers[0]
-
     sorted_list = list(sorted(numbers, key=lambda x: x))
+
     length = len(sorted_list)
     index = (length - 1) // 2
 
@@ -37,9 +36,9 @@ class StatisticsCalculator:
         s_2 = (n / (n - 1)) * sample_variance if n > 1 else 0
         sigma_2 = math.sqrt(s_2)
 
-        mode = Counter(variances).most_common(1)[0][0]
+        mode = list(sorted(intervals, key=lambda x: x.count))[0].middle
 
-        median = calculate_median(variances)
+        median = calculate_median(itertools.chain(*([x.middle] * x.count for x in intervals)))
 
         return StatisticsData(
             sample_mean,
