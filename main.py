@@ -19,7 +19,7 @@ def report(collection, stat, name, options):
 
 
 def main():
-    with open("data3.json", "r", encoding="utf8") as f:
+    with open("data.json", "r", encoding="utf8") as f:
         data = json.load(f)
     pairs = data["pairs"]
     n = len(pairs)
