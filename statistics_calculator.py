@@ -36,7 +36,7 @@ class StatisticsCalculator:
         s_2 = (n / (n - 1)) * sample_variance if n > 1 else 0
         sigma_2 = math.sqrt(s_2)
 
-        mode = list(sorted(intervals, key=lambda x: x.count))[0].middle
+        mode = list(sorted(intervals, key=lambda x: x.count))[-1].middle
 
         median = calculate_median(itertools.chain(*([x.middle] * x.count for x in intervals)))
 
