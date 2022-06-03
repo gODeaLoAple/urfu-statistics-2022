@@ -3,17 +3,14 @@ from typing import Dict, Tuple
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from variance_collection import VarianceCollection
+from data.variance_collection import VarianceCollection
 
 
-class Table:
+class CovarianceTable:
     def __init__(self, x: VarianceCollection, y: VarianceCollection, frequency_table: Dict[Tuple[int, int], int]):
         self.x_intervals = x
         self.y_intervals = y
         self.table = frequency_table
-
-    def get_frequency_at(self, x_index, y_index):
-        return self.table.get((x_index, y_index), 0)
 
     def draw(self):
         columns = [f"[{x[0]}, {x[1]})" for x in self.x_intervals.segments()]
@@ -37,5 +34,5 @@ class Table:
         table.scale(1, 2)
         fig.tight_layout()
 
-        plt.savefig("results/table.png")
+        plt.savefig("results/Ковариационная таблица.png")
         plt.show()

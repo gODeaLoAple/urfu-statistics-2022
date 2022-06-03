@@ -1,21 +1,20 @@
 import math
-import typing
 from collections import Counter
 
 from matplotlib import pyplot as plt
 
-from correlation_options import CorrelationOptions
-from statistics_data import StatisticsData
-from table import Table
-from table_helper import draw_table
-from variance_collection import VarianceCollection
+from data.correlation_options import CorrelationOptions
+from data.statistics_data import StatisticsData
+from covariance_table import CovarianceTable
+from utils.table_helper import draw_table
+from data.variance_collection import VarianceCollection
 
 
 def get_middle(interval: VarianceCollection, index: int):
     return interval.get_interval(index).middle
 
 class Correlation:
-    def __init__(self, table: Table, x_stat: StatisticsData, y_stat: StatisticsData, options: CorrelationOptions):
+    def __init__(self, table: CovarianceTable, x_stat: StatisticsData, y_stat: StatisticsData, options: CorrelationOptions):
         self.table = table
         self.x_stat = x_stat
         self.y_stat = y_stat
@@ -66,11 +65,11 @@ class Correlation:
 
         # Y = Y(X)
         xs, ys = list(map(list, zip(*self.get_x_to_y())))
-        self.draw_regression(xs, ys, y_regression, f"results/Regression Y on X.png")
+        self.draw_regression(xs, ys, y_regression, f"results/Регрессия Y на X.png")
 
         # X = X(Y)
         xs, ys = list(map(list, zip(*self.get_y_to_x())))
-        self.draw_regression(xs, ys, x_regression, f"results/Regression X on Y.png")
+        self.draw_regression(xs, ys, x_regression, f"results/Регрессия X на Y.png")
 
         columns = ["Величина", "Значение"]
         data = [
@@ -81,7 +80,7 @@ class Correlation:
             ["Уравнение теоретической регрессии Y на X", f"$y = ({ky:0.2f}) * x + ({(y0 - ky * x0):0.2f})$"],
             ["Уравнение теоретической регрессии X на Y", f"$x = ({kx:0.2f}) * y + ({(x0 - kx * y0):0.2f})$"],
         ]
-        draw_table(columns, data, filename="results/Correlation.png")
+        draw_table(columns, data, filename="results/Корреляция.png")
 
     @staticmethod
     def draw_regression(xs, ys, f, name):
@@ -95,18 +94,18 @@ class Correlation:
         plt.show()
 
     def get_x_to_y(self):
-        return self.get_conditional_coords([(x, y) for x, y in self.get_middles()])
+        return self.get_conditional_coords([(x, y, c) for x, y, c in self.get_middles()])
 
     def get_y_to_x(self):
-        return self.get_conditional_coords([(y, x) for x, y in self.get_middles()])
+        return self.get_conditional_coords([(y, x, c) for x, y, c in self.get_middles()])
 
     @staticmethod
-    def get_conditional_coords(pairs):
+    def get_conditional_coords(triples):
         result = {}
-        for x, y in pairs:
+        for x, y, c in triples:
             if x not in result:
                 result[x] = []
-            result[x].append(y)
+            result[x].extend([y] * c)
         result = [(xm, Counter(yms)) for xm, yms in result.items()]
         result = [(xm, sum(y * n for y, n in c.items()) / sum(c.values())) for xm, c in result]
         return list(sorted(result, key=lambda t: t[0]))
@@ -117,4 +116,4 @@ class Correlation:
         for x, y in self.table.table.keys():
             xm = get_middle(x_intervals, x)
             ym = get_middle(y_intervals, y)
-            yield xm, ym
+            yield xm, ym, self.table.table[x, y]

@@ -1,6 +1,4 @@
 import itertools
-import math
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -8,17 +6,11 @@ from matplotlib import pyplot as plt
 from scipy import stats
 from scipy.stats import laplace
 
-from interval import Interval
-from statistics_data import StatisticsData
-from table_helper import draw_table
-from variance_collection import VarianceCollection
-
-
-class NormReportOptions:
-    def __init__(self, alpha: float, xi_expected: Optional[float] = None, q: Optional[float] = None):
-        self.xi_expected = xi_expected
-        self.q = q
-        self.alpha = alpha
+from data.interval import Interval
+from data.statistics_data import StatisticsData
+from data.norm_report_options import NormReportOptions
+from utils.table_helper import draw_table
+from data.variance_collection import VarianceCollection
 
 
 def calculate_laplace(a, sigma, left, right):
@@ -37,7 +29,8 @@ class ReportBuilder:
         values = {x.middle: x.count for x in self.collection.intervals}
         columns = [self.name] + list(map(str, values.keys()))
         data = [["N"] + list(map(str, values.values()))]
-        draw_table(columns, data, filename=f"results/Distribution {self.name}.png")
+
+        draw_table(columns, data, filename=f"results/Таблица распределения {self.name}.png")
 
     def report_hist(self):
         frequencies = {x.middle: x.count for x in self.collection.intervals}
@@ -48,7 +41,7 @@ class ReportBuilder:
         fig, ax = plt.subplots()
         df["data"].plot(kind='bar', edgecolor='black', grid=True, width=1.0)
         df["data"].plot(kind='line', color='black', ms=10)
-        plt.title(f"Гистограмма и полигоны варианты {self.name}")
+        plt.title(f"Гистограмма и полигон относительной частоты варианты {self.name}")
         plt.xlabel(self.name)
         plt.ylabel("n")
 
@@ -57,18 +50,18 @@ class ReportBuilder:
         major_tick = list(sorted(ticks))
         ax.set_yticks(major_tick)
 
-        plt.savefig(f"results/Hist {self.name}.png")
+        plt.savefig(f"results/Гистограмма и полигон {self.name}.png")
         plt.show()
 
     def report_stat(self):
-        t_gamma = 1 - self.options.alpha
         stat = self.stat
         n = self.collection.count()
+        t_gamma = 1.96
         k = t_gamma * stat.sigma_2 / (n ** 0.5)
         a = stat.sample_mean
         sigma = stat.sigma_2
         if self.options.q is None:
-            q = float(input(f"Значение в таблице q=q({t_gamma}, {n}): "))
+            q = float(input(f"Значение в таблице q=q({1 - self.options.alpha}, {n}): "))
         else:
             q = self.options.q
         p = self.pirson(a, sigma)
@@ -85,9 +78,8 @@ class ReportBuilder:
             [r"Точечная оценка $\sigma$", f"{sigma:0.5f}"],
             [r"Интервальная оценка $\sigma$", f"({stat.sigma_2 * (1 - q):0.5f}; {stat.sigma_2 * (1 + q):0.5f})"],
             [r"Критерий Пирсона", p],
-            [r"Теоретическая плотность вероятности", self.density_function_str(a, sigma)],
         ]
-        draw_table(columns, data, filename=f"results/Characteristics {self.name}.png")
+        draw_table(columns, data, filename=f"results/Характеристики {self.name}.png")
 
     def report_norm(self):
         a = self.stat.sample_mean
@@ -110,7 +102,7 @@ class ReportBuilder:
         plt.grid(True)
         plt.legend(loc='best', fontsize=7)
 
-        plt.savefig(f"results/Graph_Norm_{self.name}.png")
+        plt.savefig(f"results/График функции (норм.) {self.name}.png")
         plt.show()
 
     def report_functions(self):
@@ -122,8 +114,6 @@ class ReportBuilder:
         s = 0
         for i, interval in enumerate(self.collection.intervals):
             p1_i = interval.count
-            # left = float("-inf") if i == 0 else interval.left
-            # right = float("+inf") if i == len(self.collection.intervals) - 1 else interval.right
             p2_i = calculate_laplace(a, sigma, interval.left, interval.right) * n
             s += (p1_i - p2_i) ** 2 / p2_i
         xi_empirical = s
@@ -146,10 +136,6 @@ class ReportBuilder:
             intervals = intervals[:-2] + merged
         return sum(1 for v in intervals if v.count >= min_count)
 
-    @staticmethod
-    def density_function_str(a, sigma):
-        return r"$\frac{1}{" + f"{(math.sqrt(2 * math.pi) * sigma):0.2f}" + r"}e^{-\frac{" + f"(x - {a:0.2f})^2" + "}{" + f"{math.sqrt(2) * sigma:0.2f}" + "}}$"
-
     def report_distribution_density_func(self):
         values = list(itertools.chain(*([x.middle] * x.count for x in self.collection.intervals)))
         intervals = self.collection.intervals
@@ -160,16 +146,16 @@ class ReportBuilder:
         plt.plot(x, stats.norm.pdf(x, a, sigma), label="Теоретическая плотность")
         plt.grid(True)
         plt.title(f"График теоретической плотности {self.name}")
-        plt.savefig(f"results/distribution_density_{self.name}.png")
+        plt.savefig(f"results/Плотность распределения {self.name}.png")
         plt.show()
 
     def report_distribution_func(self):
         a, sigma = self.stat.sample_mean, self.stat.sigma_2
-        x = np.linspace(a - 3 * sigma, a + 3 * sigma, 100)
+        x = np.linspace(a - 5 * sigma, a + 5 * sigma, 100)
         plt.plot(x, stats.norm.cdf(x, a, sigma))
         plt.grid(True)
         plt.title(f"График теоретической функци распределения {self.name}")
-        plt.savefig(f"results/distribution_function_{self.name}.png")
+        plt.savefig(f"results/Функция распределения {self.name}.png")
         plt.show()
 
 

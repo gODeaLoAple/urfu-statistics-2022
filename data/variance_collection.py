@@ -1,7 +1,7 @@
 from typing import List
 
-from interval import Interval, BaseInterval
-from intervals_range import IntervalsRange
+from data.interval import Interval, BaseInterval
+from data.intervals_range import IntervalsRange
 
 
 def _create_interval(values, left, right):
